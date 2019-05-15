@@ -1,11 +1,11 @@
 package com.aldana.ejemplo14
 
 import android.os.Bundle
-import android.view.View
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
-import kotlinx.android.synthetic.main.activity_main.*
+import com.aldana.ejemplo14.databinding.ActivityMainBinding
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,91 +13,58 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         scoreViewModel = ViewModelProviders.of(this).get(ScoreViewModel::class.java)
 
-        displayScore(
-            tv_score_team_a,
-            scoreViewModel.scoreTeamA
-        )
+        val binding: ActivityMainBinding = DataBindingUtil
+            .setContentView(this, R.layout.activity_main)
 
-        displayScore(
-            tv_score_team_b,
-            scoreViewModel.scoreTeamB
-        )
+        binding.lifecycleOwner = this
+        binding.score = scoreViewModel
 
-        // TODO: El ViewModel es restaurado si ya existía, si no, se crea uno nuevo.
-        // TODO: Recuerde que el ViewModel solo sobrevive a cambios de configuración y no a la destrucción de la aplicación
+        binding.btTeamAFreeThrow.setOnClickListener { score(true, 1) }
 
+        binding.btTeamA2P.setOnClickListener { score(true, 2) }
+
+        binding.btTeamA3P.setOnClickListener { score(true, 3) }
+
+        binding.btTeamBFreeThrow.setOnClickListener { score(false, 1) }
+
+        binding.btTeamB2P.setOnClickListener { score(false, 2) }
+
+        binding.btTeamB3P.setOnClickListener { score(false, 3) }
+
+        binding.btReset.setOnClickListener { resetScore() }
     }
 
+    private fun score(isAScoring: Boolean, points: Int) {
+        if (isAScoring) {
+            scoreViewModel.scoreTeamA.value =
+                getNewScore(
+                    points,
+                    scoreViewModel.scoreTeamA.value!!
+                )
 
-    // TODO: Accediendo y modificando datos almacenados en el ViewModel según el método utilizado
-
-    fun addOneTeamA(v: View) {
-        displayScore(
-            tv_score_team_a,
-            ++scoreViewModel.scoreTeamA
-        )
+        } else {
+            scoreViewModel.scoreTeamB.value =
+                getNewScore(
+                    points,
+                    scoreViewModel.scoreTeamB.value!!
+                )
+        }
     }
 
-    fun addOneTeamB(v: View) {
-        displayScore(
-            tv_score_team_b,
-            ++scoreViewModel.scoreTeamB
-        )
+    private fun resetScore() {
+        scoreViewModel.scoreTeamA.value = "0"
+        scoreViewModel.scoreTeamB.value = "0"
     }
 
-    fun addTwoTeamA(v: View) {
-        scoreViewModel.scoreTeamA += 2
-        displayScore(
-            tv_score_team_a,
-            scoreViewModel.scoreTeamA
-        )
-    }
-
-    fun addTwoTeamB(v: View) {
-        scoreViewModel.scoreTeamB += 2
-        displayScore(
-            tv_score_team_b,
-            scoreViewModel.scoreTeamB
-        )
-    }
-
-    fun addThreeTeamA(v: View) {
-        scoreViewModel.scoreTeamA += 3
-        displayScore(
-            tv_score_team_a,
-            scoreViewModel.scoreTeamA
-        )
-    }
-
-    fun addThreeTeamB(v: View) {
-        scoreViewModel.scoreTeamB += 3
-        displayScore(
-            tv_score_team_b,
-            scoreViewModel.scoreTeamB
-        )
-    }
-
-    fun resetScores(v: View) {
-        scoreViewModel.scoreTeamA = 0
-        scoreViewModel.scoreTeamB = 0
-
-        displayScore(
-            tv_score_team_a,
-            scoreViewModel.scoreTeamA
-        )
-
-        displayScore(
-            tv_score_team_b,
-            scoreViewModel.scoreTeamB
-        )
-    } // TODO: Limpiando datos
-
-    fun displayScore(v: TextView, score: Int) {
-        v.text = score.toString()
-    }
-
+    private fun getNewScore(
+        points: Int,
+        currentScore: String
+    ) = (currentScore.toInt()
+        .plus(points))
+        .toString()
 }
+
+
